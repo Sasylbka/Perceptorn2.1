@@ -41,9 +41,23 @@ public class Main {
                 matrixS_A[i][j]=koef.get(random.nextInt(9));
             }
         }
+        System.out.println("Веса S и A");
+        for(int i =0;i<30;i++){
+            String out="";
+            for(int j = 0;j<6;j++){
+                out=out+" "+matrixS_A[i][j];
+            }
+            System.out.println(out);
+        }
+        System.out.println("Веса S и R");
         for (int i =0;i<6;i++){
             massA_S[i]=koef.get(random.nextInt(9));
         }
+        String temp="";
+        for (int i =0;i<6;i++){
+            temp=temp+" "+massA_S[i];
+        }
+        System.out.println(temp);
         for (int j =0;j<6;j++) {
             double tempD=0;
             double tempS=0;
@@ -58,8 +72,8 @@ public class Main {
             SummAforD[j]=tempD;
             SummAforS[j]=tempS;
         }
-        System.out.println(Arrays.toString(SummAforD));
-        System.out.println(Arrays.toString(SummAforS));
+        System.out.println("Сумма весов А при предъявлении Д "+Arrays.toString(SummAforD));
+        System.out.println("Сумма весов А при предъявлении С "+Arrays.toString(SummAforS));
         double min=Double.MAX_VALUE;
         double max=Double.MIN_VALUE;
         for(int i=0;i<6;i++){
@@ -76,9 +90,6 @@ public class Main {
                 max=SummAforS[i];
             }
         }
-        System.out.println(max);
-        System.out.println(min);
-        System.out.println(Arrays.toString(massA_S));
         double RforS=0;
         double RforD=0;
         double bias = (max+min)/2-0.1;
@@ -94,42 +105,90 @@ public class Main {
                 ActivateNeironsForS.add(i);
             }
         }
-        System.out.println(ActivateNeironsForD);
-        System.out.println(ActivateNeironsForS);
+        System.out.println("Активированные нейроны для Д "+ActivateNeironsForD);
+        System.out.println("Активированные нейроны для С "+ActivateNeironsForS);
+
+        System.out.println("До обучения");
+        System.out.println("Сумма весов R для Д:"+RforD);
+        System.out.println("Сумма весов R для C:"+RforS);
         //System.out.println(Arrays.toString(massA_S));
         double biasforR=(RforD+RforS)/2;
-        while(RforD<biasforR || RforS>=biasforR){
-            if(RforD<biasforR){
-                for(int i=0;i<ActivateNeironsForD.size();i++){
-                    massA_S[ActivateNeironsForD.get(i)]=massA_S[ActivateNeironsForD.get(i)]+0.1;
-                }
-            }
-            if(RforS>=biasforR){
-                for(int i=0;i<ActivateNeironsForS.size();i++){
-                    massA_S[ActivateNeironsForS.get(i)]=massA_S[ActivateNeironsForS.get(i)]-0.1;
-                }
-            }
-            RforD=0;
-            RforS=0;
-            for(int i =0;i<6;i++){
-                if(SummAforD[i]>bias){
-                    RforD+=massA_S[i];
-                }
-                else{
-                    RforS+=massA_S[i];
-                }
-            }
+        System.out.println("Тетта "+biasforR);
+        double[] copyMassA_S = massA_S;
+        double copyRforD= RforD;
+        double copyRforS= RforS;
+        if(RforD>=biasforR){
+            System.out.println("+1 - Д");
+            System.out.println("-1 - C");
         }
-        System.out.println(Arrays.toString(massA_S));
-        System.out.println(RforS);
-        System.out.println(RforD);
+        else {
+            System.out.println("-1 - Д");
+            System.out.println("+1 - C");
+            while(RforD<biasforR || RforS>=biasforR){
+                if(RforD<biasforR){
+                    for(int i=0;i<ActivateNeironsForD.size();i++){
+                        massA_S[ActivateNeironsForD.get(i)]=massA_S[ActivateNeironsForD.get(i)]+0.1;
+                    }
+                }
+                if(RforS>=biasforR){
+                    for(int i=0;i<ActivateNeironsForS.size();i++){
+                        massA_S[ActivateNeironsForS.get(i)]=massA_S[ActivateNeironsForS.get(i)]-0.1;
+                    }
+                }
+                RforD=0;
+                RforS=0;
+                for(int i =0;i<6;i++){
+                    if(SummAforD[i]>bias){
+                        RforD+=massA_S[i];
+                    }
+                    else{
+                        RforS+=massA_S[i];
+                    }
+                }
+            }
+            System.out.println("После альфа обучения");
+            System.out.println(Arrays.toString(massA_S));
+            System.out.println("Сумма весов R для Д "+RforD);
+            System.out.println("Сумма весов R для С "+RforS);
 
+            if(RforD>=biasforR){
+                System.out.println("+1 - Д");
+                System.out.println("-1 - Д");
+            }
+            double delWAct=0.1-((ActivateNeironsForS.size()*0.1)/6);
+            double delWPass=(ActivateNeironsForS.size()*(-0.1))/6;
+            while(copyRforD<biasforR || copyRforS>=biasforR){
+                if(copyRforD<biasforR){
+                    for(int i=0;i<ActivateNeironsForD.size();i++){
+                        copyMassA_S[ActivateNeironsForD.get(i)]=copyMassA_S[ActivateNeironsForD.get(i)]-delWPass;
+                    }
+                }
+                if(RforS>=biasforR){
+                    for(int i=0;i<ActivateNeironsForS.size();i++){
+                        copyMassA_S[ActivateNeironsForS.get(i)]=copyMassA_S[ActivateNeironsForS.get(i)]-delWAct;
+                    }
+                }
+                copyRforD=0;
+                copyRforS=0;
+                for(int i =0;i<6;i++){
+                    if(SummAforD[i]>bias){
+                        copyRforD+=copyMassA_S[i];
+                    }
+                    else{
+                        copyRforS+=copyMassA_S[i];
+                    }
+                }
+            }
+            System.out.println("После гамма обучения");
+            System.out.println(Arrays.toString(copyMassA_S));
+            System.out.println("Сумма весов R для Д "+copyRforD);
+            System.out.println("Сумма весов R для C "+copyRforS);
+            if(copyRforD>=biasforR){
+                System.out.println("+1 - Д");
+                System.out.println("-1 - Д");
+            }
 
+        }
 
-        //List<Double> S= new ArrayList<>();
-        //List<Double> A= new ArrayList<>();
-        //
-        //[6.9, 6.799999999999999, 5.2, 5.1, 7.5, 6.6000000000000005]
-        //[5.199999999999999, 5.3, 5.3, 5.6, 5.7, 5.2]
     }
 }
